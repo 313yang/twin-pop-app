@@ -1,10 +1,11 @@
 import React,{useEffect,useMemo,useReducer,useRef,useState} from 'react';
-import {AccessibilityInfo,ActivityIndicator,AppState,BackHandler,Modal,PanResponder,Pressable,ScrollView,StyleSheet,Text,View,useWindowDimensions} from 'react-native';
+import {AccessibilityInfo,ActivityIndicator,AppState,BackHandler,Modal,PanResponder,Pressable,ScrollView,StyleSheet,View,useWindowDimensions} from 'react-native';
 import {SafeAreaProvider,SafeAreaView,useSafeAreaInsets} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {useFonts} from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {AppText as Text} from './src/components/AppText';
 import {Board} from './src/components/Board';
 import {Character} from './src/components/Character';
 import {Icon,type IconName} from './src/components/Icon';
@@ -17,7 +18,7 @@ type Dialog='pause'|'help'|'result'|null;
 function Button({children,onPress,secondary=false,disabled=false,label}:{children:React.ReactNode;onPress:()=>void;secondary?:boolean;disabled?:boolean;label?:string}){return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={({pressed})=>[s.button,secondary&&s.secondary,pressed&&s.pressed,disabled&&{opacity:.35}]}><Text style={[s.buttonText,secondary&&{fontSize:14,color:'#91806b'}]}>{children}</Text></Pressable>}
 function Round({icon,label,onPress}:{icon:IconName;label:string;onPress:()=>void}){return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({pressed})=>[s.round,pressed&&s.pressed]}><Icon name={icon} size={23} color="#93816c"/></Pressable>}
 function GameApp(){
- const [fontsLoaded,fontError]=useFonts(FontAwesome5.font);
+ const [fontsLoaded,fontError]=useFonts({...FontAwesome5.font,KccSign:require('./assets/fonts/KccSign.otf')});
  const [state,dispatch]=useReducer(reducer,initialState),[dialog,setDialog]=useState<Dialog>(null),[chapter,setChapter]=useState(0),[hint,setHint]=useState<Direction[]>([]),[reduced,setReduced]=useState(false),[storageError,setStorageError]=useState(false),[today,setToday]=useState(koreaDate);
  const insets=useSafeAreaInsets(),{width,height}=useWindowDimensions(),contentWidth=Math.min(width,440),writeQueue=useRef(Promise.resolve()),mounted=useRef(true);
  const session=state.session,level=session?getLevel(session.mode,session.index,session.date):null;
