@@ -2,6 +2,8 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Animated,StyleSheet,View} from 'react-native';
 import {Character} from './Character';
 import {Icon} from './Icon';
+import {FaceBadge} from './FaceBadge';
+import {Goal} from './Goal';
 import type {Direction,Level} from '../game/types';
 export function Board({level,board,position,height,revision,direction,won,reduced}:{level:Level;board:0|1;position:number;height:number;revision:number;direction:Direction|null;won:boolean;reduced:boolean}){
  const [width,setWidth]=useState(0),travel=useRef(new Animated.ValueXY()).current,bounce=useRef(new Animated.Value(0)).current;
@@ -12,11 +14,11 @@ export function Board({level,board,position,height,revision,direction,won,reduce
  else{animation=Animated.spring(travel,{toValue:target,speed:30,bounciness:5,useNativeDriver:true});animation.start();}
  last.current={pos:position,width,height};return()=>animation?.stop();
  },[position,revision,width,height,level.n,level.reverse,direction,reduced,travel,cw,ch,size,mint]);
- useEffect(()=>{bounce.setValue(0);if(!won||reduced)return;const a=Animated.loop(Animated.sequence([Animated.timing(bounce,{toValue:-8,duration:140,useNativeDriver:true}),Animated.timing(bounce,{toValue:0,duration:160,useNativeDriver:true})]),{iterations:3});a.start();return()=>a.stop();},[won,reduced,bounce]);
+ useEffect(()=>{bounce.setValue(0);if((!won&&position!==level.goals[board])||reduced)return;const a=Animated.loop(Animated.sequence([Animated.timing(bounce,{toValue:-8,duration:140,useNativeDriver:true}),Animated.timing(bounce,{toValue:0,duration:160,useNativeDriver:true})]),{iterations:won?3:1});a.start();return()=>a.stop();},[won,position,level.goals,board,reduced,bounce]);
  return <View style={[s.wrap,{backgroundColor:mint?'#edf3e3':'#ffede5',borderColor:mint?'#d5dfc1':'#efd5c5'}]}>
-  <View style={s.label}><Character mint={mint} size={23} reduced/><Icon name={mint&&level.reverse?'swap':'heart'} color={mint?'#80a68b':'#d79380'} size={17}/></View>
+  <View style={s.label}><FaceBadge mint={mint}/>{mint&&level.reverse&&<Icon name="swap" color="#80a68b" size={17}/>}</View>
   <View onLayout={e=>setWidth(e.nativeEvent.layout.width)} style={{height,position:'relative'}} accessibilityLabel={mint?'민트 미로':'복숭아 미로'}>
-   {width>0&&level.boards[board].map((wall,i)=><View key={i} style={[s.cell,{left:(i%level.n)*(cw+gap),top:Math.floor(i/level.n)*(ch+gap),width:cw,height:ch,backgroundColor:wall?(mint?'#c8d8b0':'#e8c9b1'):(mint?'#fbfcef':'#fff8ef'),borderBottomColor:wall?(mint?'#afc097':'#d6b89f'):(mint?'#e3e8d5':'#f0e5d7')}]}>{i===level.goals[board]&&<View style={[s.goal,{borderColor:mint?'#84ad92':'#d99583',width:Math.min(cw*.7,ch*.8),height:Math.min(cw*.7,ch*.8)}]}><Icon name="heart" color={mint?'#84ad92':'#d99583'} size={Math.min(ch*.55,19)}/></View>}</View>)}
+   {width>0&&level.boards[board].map((wall,i)=><View key={i} style={[s.cell,{left:(i%level.n)*(cw+gap),top:Math.floor(i/level.n)*(ch+gap),width:cw,height:ch,backgroundColor:wall?(mint?'#c8d8b0':'#e8c9b1'):(mint?'#fbfcef':'#fff8ef'),borderBottomColor:wall?(mint?'#afc097':'#d6b89f'):(mint?'#e3e8d5':'#f0e5d7')}]}>{i===level.goals[board]&&<Goal size={Math.min(cw*.7,ch*.8)} mint={mint} arrived={position===level.goals[board]} reduced={reduced}/>}</View>)}
    {width>0&&<Animated.View pointerEvents="none" style={{position:'absolute',left:0,top:0,transform:travel.getTranslateTransform()}}><Animated.View style={{transform:[{translateY:bounce}]}}><Character size={size} mint={mint} happy={position===level.goals[board]} reduced={reduced}/></Animated.View></Animated.View>}
   </View>
  </View>

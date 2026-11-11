@@ -2,11 +2,13 @@ import React,{useEffect,useMemo,useReducer,useRef,useState} from 'react';
 import {AccessibilityInfo,ActivityIndicator,AppState,BackHandler,Modal,PanResponder,Pressable,ScrollView,StyleSheet,Text,View,useWindowDimensions} from 'react-native';
 import {SafeAreaProvider,SafeAreaView,useSafeAreaInsets} from 'react-native-safe-area-context';
 import {StatusBar} from 'expo-status-bar';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import {useFonts} from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Board} from './src/components/Board';
 import {Character} from './src/components/Character';
 import {Icon,type IconName} from './src/components/Icon';
-import {Confetti,SwipeGuide} from './src/components/Motion';
+import {Confetti,SwipeGuide,ClearStars} from './src/components/Motion';
 import {getLevel,koreaDate,solve} from './src/game/engine';
 import {initialState,parseProgress,reducer} from './src/game/state';
 import type {Direction,Mode} from './src/game/types';
@@ -15,11 +17,12 @@ type Dialog='pause'|'help'|'result'|null;
 function Button({children,onPress,secondary=false,disabled=false,label}:{children:React.ReactNode;onPress:()=>void;secondary?:boolean;disabled?:boolean;label?:string}){return <Pressable accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={({pressed})=>[s.button,secondary&&s.secondary,pressed&&s.pressed,disabled&&{opacity:.35}]}><Text style={[s.buttonText,secondary&&{fontSize:14,color:'#91806b'}]}>{children}</Text></Pressable>}
 function Round({icon,label,onPress}:{icon:IconName;label:string;onPress:()=>void}){return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({pressed})=>[s.round,pressed&&s.pressed]}><Icon name={icon} size={23} color="#93816c"/></Pressable>}
 function GameApp(){
+ const [fontsLoaded,fontError]=useFonts(FontAwesome5.font);
  const [state,dispatch]=useReducer(reducer,initialState),[dialog,setDialog]=useState<Dialog>(null),[chapter,setChapter]=useState(0),[hint,setHint]=useState<Direction[]>([]),[reduced,setReduced]=useState(false),[storageError,setStorageError]=useState(false),[today,setToday]=useState(koreaDate);
  const insets=useSafeAreaInsets(),{width,height}=useWindowDimensions(),contentWidth=Math.min(width,440),writeQueue=useRef(Promise.resolve()),mounted=useRef(true);
  const session=state.session,level=session?getLevel(session.mode,session.index,session.date):null;
  useEffect(()=>{mounted.current=true;AsyncStorage.getItem(STORAGE).then(raw=>{if(mounted.current)dispatch({type:'hydrate',progress:parseProgress(raw)})}).catch(()=>{if(mounted.current){setStorageError(true);dispatch({type:'hydrate',progress:parseProgress(null)})}});AccessibilityInfo.isReduceMotionEnabled().then(setReduced);const motion=AccessibilityInfo.addEventListener('reduceMotionChanged',setReduced);const app=AppState.addEventListener('change',v=>{if(v==='active')setToday(koreaDate())});return()=>{mounted.current=false;motion.remove();app.remove()}},[]);
- useEffect(()=>{if(!state.ready)return;const payload=JSON.stringify(state.progress);writeQueue.current=writeQueue.current.then(()=>AsyncStorage.setItem(STORAGE,payload)).then(()=>{if(mounted.current)setStorageError(false)}).catch(()=>{if(mounted.current)setStorageError(true)});},[state.ready,state.progress]);
+ useEffect(()=>{if(!state.ready||(!fontsLoaded&&!fontError))return;const payload=JSON.stringify(state.progress);writeQueue.current=writeQueue.current.then(()=>AsyncStorage.setItem(STORAGE,payload)).then(()=>{if(mounted.current)setStorageError(false)}).catch(()=>{if(mounted.current)setStorageError(true)});},[state.ready,state.progress]);
  useEffect(()=>{setHint([])},[state.revision]);
  useEffect(()=>{if(!state.won||state.screen!=='game')return;const timer=setTimeout(()=>setDialog('result'),reduced?0:650);return()=>clearTimeout(timer)},[state.won,state.screen,reduced]);
  useEffect(()=>{const sub=BackHandler.addEventListener('hardwareBackPress',()=>{if(dialog==='result'){setDialog(null);dispatch({type:'home'});return true}if(dialog){setDialog(null);return true}if(state.screen==='game'){if(!state.won)setDialog('pause');else dispatch({type:'home'});return true}if(state.screen==='levels'){dispatch({type:'home'});return true}return false});return()=>sub.remove()},[dialog,state.screen,state.won]);
@@ -30,7 +33,7 @@ function GameApp(){
  const count=Object.keys(state.progress.wins).filter(k=>k.startsWith('campaign-')).length;
  const continueStage=state.progress.resume?.mode==='campaign'?state.progress.resume.index:state.progress.nextStage;
  const boardHeight=Math.max(level?level.n*20+4*(level.n-1):96,Math.min(185,(height-insets.top-insets.bottom-360-(level?.reverse?28:0))/2));
- if(!state.ready)return <View style={[s.shell,{justifyContent:'center',alignItems:'center'}]}><ActivityIndicator color="#dc8d7d"/></View>;
+ if(!state.ready||(!fontsLoaded&&!fontError))return <View style={[s.shell,{justifyContent:'center',alignItems:'center'}]}><ActivityIndicator color="#dc8d7d"/></View>;
  return <SafeAreaView style={s.safe}><StatusBar style="dark"/><View style={[s.shell,{width:contentWidth}]}>
  {state.screen==='home'&&<ScrollView contentContainerStyle={s.homeScroll} showsVerticalScrollIndicator={false}>
   <View style={s.header}><View style={{width:44}}/><Round icon="help" label="게임 방법" onPress={()=>setDialog('help')}/></View>
@@ -57,7 +60,7 @@ function GameApp(){
   <View style={s.modalBackdrop}><View style={s.modalCard} accessibilityViewIsModal>
    {dialog==='help'&&<><Text style={s.modalTitle}>같이 집으로!</Text><Text style={s.help}>화면을 밀면 둘이 함께 움직여요.{`\n`}벽에 닿으면 그 친구만 멈춰요.{`\n`}둘 다 목적지에 도착하면 성공!</Text><Button onPress={()=>setDialog(null)}>확인</Button></>}
    {dialog==='pause'&&<><Text style={s.modalTitle}>잠깐!</Text><Button onPress={()=>setDialog(null)}>계속하기</Button><Button secondary onPress={()=>setDialog('help')}>게임 방법</Button><Button secondary onPress={home}>홈으로</Button></>}
-   {dialog==='result'&&session&&level&&<><View style={{flexDirection:'row',justifyContent:'center',gap:10,marginBottom:12}}><Character size={48} happy reduced={reduced}/><Character mint size={48} happy reduced={reduced}/></View><Text style={s.modalTitle}>{session.mode==='campaign'&&session.index===240?'ALL CLEAR!':'CLEAR!'}</Text><View style={s.resultStats}><Text style={s.resultLabel}>내 이동{`\n`}<Text style={s.resultValue}>{session.history.length}</Text></Text><Text style={s.resultLabel}>최단{`\n`}<Text style={s.resultValue}>{level.par}</Text></Text></View><Button onPress={()=>{if(session.mode==='daily'||session.index===240)home();else start('campaign',session.index+1)}}>{session.mode==='daily'||session.index===240?'홈으로':'다음'}</Button><Button secondary onPress={()=>{setDialog(null);dispatch({type:'reset'})}}>한 번 더</Button></>}
+   {dialog==='result'&&session&&level&&<><ClearStars reduced={reduced}/><Text style={s.modalTitle}>{session.mode==='campaign'&&session.index===240?'ALL CLEAR!':'CLEAR!'}</Text><View style={s.resultStats}><Text style={s.resultLabel}>내 이동{`\n`}<Text style={s.resultValue}>{session.history.length}</Text></Text><Text style={s.resultLabel}>최단{`\n`}<Text style={s.resultValue}>{level.par}</Text></Text></View><Button onPress={()=>{if(session.mode==='daily'||session.index===240)home();else start('campaign',session.index+1)}}>{session.mode==='daily'||session.index===240?'홈으로':'다음'}</Button><Button secondary onPress={()=>{setDialog(null);dispatch({type:'reset'})}}>한 번 더</Button></>}
   </View></View>
  </Modal>
  </View></SafeAreaView>
