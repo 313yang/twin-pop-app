@@ -7,7 +7,7 @@ import {useFonts} from 'expo-font';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {AppText as Text} from './src/components/AppText';
 import {Board} from './src/components/Board';
-import {Character} from './src/components/Character';
+import {HomeScreen} from './src/components/HomeScreen';
 import {Icon,type IconName} from './src/components/Icon';
 import {Confetti,SwipeGuide,ClearStars} from './src/components/Motion';
 import {getLevel,koreaDate,solve} from './src/game/engine';
@@ -31,22 +31,11 @@ function GameApp(){
  const pan=useMemo(()=>PanResponder.create({onStartShouldSetPanResponder:()=>false,onMoveShouldSetPanResponderCapture:(_,g)=>Math.max(Math.abs(g.dx),Math.abs(g.dy))>10,onMoveShouldSetPanResponder:(_,g)=>Math.max(Math.abs(g.dx),Math.abs(g.dy))>10,onPanResponderRelease:(_,g)=>{if(Math.max(Math.abs(g.dx),Math.abs(g.dy))<18)return;input.current(Math.abs(g.dx)>Math.abs(g.dy)?g.dx>0?1:3:g.dy>0?2:0)},onPanResponderTerminationRequest:()=>true}),[]);
  const start=(mode:Mode,index:number)=>{setDialog(null);setHint([]);dispatch({type:'start',mode,index,date:koreaDate()})};
  const home=()=>{setDialog(null);dispatch({type:'home'})};
- const count=Object.keys(state.progress.wins).filter(k=>k.startsWith('campaign-')).length;
  const continueStage=state.progress.resume?.mode==='campaign'?state.progress.resume.index:state.progress.nextStage;
  const boardHeight=Math.max(level?level.n*20+4*(level.n-1):96,Math.min(185,(height-insets.top-insets.bottom-360-(level?.reverse?28:0))/2));
  if(!state.ready||(!fontsLoaded&&!fontError))return <View style={[s.shell,{justifyContent:'center',alignItems:'center'}]}><ActivityIndicator color="#dc8d7d"/></View>;
  return <SafeAreaView style={s.safe}><StatusBar style="dark"/><View style={[s.shell,{width:contentWidth}]}>
- {state.screen==='home'&&<ScrollView contentContainerStyle={s.homeScroll} showsVerticalScrollIndicator={false}>
-  <View style={s.header}><View style={{width:44}}/><Round icon="help" label="게임 방법" onPress={()=>setDialog('help')}/></View>
-  <View style={s.homeBody}><View style={s.title}><Text style={s.twin}>TWIN</Text><Text style={s.pop}>POP!</Text></View>
-  <View style={s.hero}><View style={s.garden}/><View style={{position:'absolute',left:34,bottom:40,transform:[{rotate:'-8deg'}]}}><Character size={82} idle reduced={reduced}/></View><View style={{position:'absolute',right:34,bottom:52,transform:[{rotate:'8deg'}]}}><Character mint size={82} idle reduced={reduced}/></View></View>
-  <Button onPress={()=>start('campaign',continueStage)}>{count||state.progress.resume?'계속하기':'플레이'}</Button>
-  <Button secondary onPress={()=>{setChapter(Math.floor((continueStage-1)/30));dispatch({type:'levels'})}}>스테이지</Button>
-  <Pressable accessibilityRole="button" onPress={()=>start('daily',1)} style={({pressed})=>[s.daily,pressed&&s.pressed]}><Icon name="calendar" color="#bd9b57" size={25}/><Text style={{fontWeight:'700',color:'#9c8458'}}>오늘의 퍼즐</Text><View style={{marginLeft:'auto'}}><Icon name={state.progress.wins['daily-'+today]?'check':'right'} color="#9c8458" size={19}/></View></Pressable>
-  <Text style={s.progressText}>{count} / 240</Text><View style={s.track}><View style={{height:5,width:`${count/240*100}%`,backgroundColor:'#a2c99f',borderRadius:8}}/></View>
-  {storageError&&<Text accessibilityRole="alert" style={s.error}>진행 기록을 저장하지 못했어요.</Text>}
-  </View>
- </ScrollView>}
+ {state.screen==='home'&&<HomeScreen reduced={reduced} dailyDone={!!state.progress.wins['daily-'+today]} storageError={storageError} onHelp={()=>setDialog('help')} onStart={()=>start('campaign',continueStage)} onStages={()=>{setChapter(Math.floor((continueStage-1)/30));dispatch({type:'levels'})}} onDaily={()=>start('daily',1)}/>}
  {state.screen==='levels'&&<><View style={s.header}><Round icon="back" label="홈으로" onPress={home}/><Text style={s.stageTitle}>스테이지</Text><View style={{width:44}}/></View><ScrollView contentContainerStyle={s.levelsBody}><View style={s.chapters}>{Array.from({length:8},(_,i)=><Pressable accessibilityRole="button" accessibilityState={{selected:i===chapter}} key={i} onPress={()=>setChapter(i)} style={[s.chapter,i===chapter&&{backgroundColor:'#ffd4bd'}]}><Text style={s.chapterText}>{i*30+1}–{i*30+30}</Text></Pressable>)}</View><View style={s.levelGrid}>{Array.from({length:30},(_,i)=>{const n=chapter*30+i+1,done=!!state.progress.wins['campaign-'+n];return <Pressable accessibilityRole="button" accessibilityLabel={`${n} 스테이지${done?', 완료':''}`} key={n} onPress={()=>start('campaign',n)} style={[s.levelButton,{width:(contentWidth-48-40)/5},done&&{backgroundColor:'#d9ead1',borderColor:'#c3d7b8'},n===continueStage&&{backgroundColor:'#ffceba',borderColor:'#e4ac95'}]}><Text style={s.levelText}>{n}</Text>{done&&<View style={{position:'absolute',right:3,top:3}}><Icon name="check" size={12} color="#6f9267"/></View>}</Pressable>})}</View></ScrollView></>}
  {state.screen==='game'&&session&&level&&<><View style={s.header}><Round icon="back" label="홈으로" onPress={home}/><Text style={s.stageTitle}>{session.mode==='daily'?'오늘의 퍼즐':`STAGE ${String(session.index).padStart(2,'0')}`}</Text><Round icon="pause" label="일시 정지" onPress={()=>{if(!state.won)setDialog('pause')}}/></View>
   <ScrollView bounces={false} contentContainerStyle={s.gameBody}><View style={s.stats}><Text style={s.statText}>이동 <Text style={s.statValue}>{session.history.length}</Text></Text><Text style={s.statText}>최단 <Text style={s.statValue}>{level.par}</Text></Text></View>
