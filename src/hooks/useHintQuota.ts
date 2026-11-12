@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ads} from '../ads/sdk';
 import {isRewardedReady,showHintAd,subscribeRewardedReady} from '../ads/rewarded';
 
 const STORAGE='twinpop.hints.v1';
@@ -7,7 +8,8 @@ export const FREE_HINTS_PER_DAY=3;
 type Saved={date:string;used:number};
 
 /** 하루 무료 힌트 수 관리 + 소진 시 보상형 광고로 1회 충전 */
-export function useHintQuota(today:string){
+export function useHintQuota(today:string,adFree:boolean){
+  const unlimited=!ads||adFree;
   const [used,setUsed]=useState(0);
   const [adReady,setAdReady]=useState(isRewardedReady);
   useEffect(()=>subscribeRewardedReady(setAdReady),[]);
@@ -17,9 +19,11 @@ export function useHintQuota(today:string){
 
   /** 무료 힌트가 있으면 차감 후 reveal, 없으면 광고 시청 완료 후 reveal */
   const requestHint=useCallback((reveal:()=>void)=>{
+    if(unlimited){reveal();return}
     if(remaining>0){persist(used+1);reveal();return}
     showHintAd(reveal);
-  },[remaining,used,today]);
+  },[unlimited,remaining,used,today]);
 
-  return {remaining,adReady,requestHint};
+  // 광고 SDK가 없는 환경(Expo Go) 또는 광고 면제 구간에서는 힌트 무제한(차감 없음)
+  return {unlimited,remaining:unlimited?FREE_HINTS_PER_DAY:remaining,adReady,requestHint};
 }

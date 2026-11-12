@@ -10,3 +10,7 @@ web-build/
 .env
 .env.*
 .DS_Store
+
+# Expo prebuild 산출물 (app.json에서 재생성)
+/ios
+/android
