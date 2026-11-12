@@ -13,7 +13,13 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.twinpop.game"
+      "bundleIdentifier": "com.twinpop.game",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      },
+      "entitlements": {
+        "com.apple.developer.ubiquity-kvstore-identifier": "$(TeamIdentifierPrefix)$(CFBundleIdentifier)"
+      }
     },
     "android": {
       "package": "com.twinpop.game",
@@ -32,7 +38,15 @@
           "iosAppId": "ca-app-pub-8097019015758092~4634388658",
           "androidAppId": "ca-app-pub-3940256099942544~3347511713"
         }
-      ]
-    ]
+      ],
+      "expo-audio",
+      "expo-localization"
+    ],
+    "locales": {
+      "ko": "./locales/ko.json",
+      "en": "./locales/en.json",
+      "ja": "./locales/ja.json",
+      "zh-Hans": "./locales/zh-Hans.json"
+    }
   }
 }

@@ -7,6 +7,7 @@ import {AppText as Text} from './AppText';
 import {Character} from './Character';
 import {Icon} from './Icon';
 import {homeLogoSvg,homeLogoAspect} from '../art/homeLogo';
+import {t} from '../i18n';
 
 function Sparkle({size=23}:{size?:number}){return <Svg width={size} height={size} viewBox="0 0 40 40"><Path d="M20 1Q24 15 39 20Q24 25 20 39Q16 25 1 20Q16 15 20 1Z" fill="#f4c878"/></Svg>}
 function Flower({size=24,color='#f1d381'}:{size?:number;color?:string}){return <Svg width={size} height={size} viewBox="0 0 40 40">{[0,72,144,216,288].map(angle=><Ellipse key={angle} cx={20} cy={10} rx={4.5} ry={10} fill={color} transform={`rotate(${angle} 20 20)`}/>)}<Circle cx={20} cy={20} r={3} fill="#fff4d5"/></Svg>}
@@ -22,7 +23,8 @@ function Ambient({reduced}:{reduced:boolean}){
   <Animated.View style={[{position:'absolute',right:17,top:200},starStyle]}><Sparkle size={27}/></Animated.View>
  </View>
 }
-export function HomeScreen({reduced,dailyDone,storageError,onHelp,onStart,onStages,onDaily}:{reduced:boolean;dailyDone:boolean;storageError:boolean;onHelp:()=>void;onStart:()=>void;onStages:()=>void;onDaily:()=>void}){
+export type HomeActions={help:()=>void;settings:()=>void;start:()=>void;stages:()=>void;daily:()=>void};
+export function HomeScreen({reduced,dailyDone,storageError,actions}:{reduced:boolean;dailyDone:boolean;storageError:boolean;actions:HomeActions}){
  const insets=useSafeAreaInsets();
  const {width,height}=useWindowDimensions(),sceneWidth=Math.min(width,440)-48,characterSize=Math.min(100,sceneWidth*.28),travelDistance=(sceneWidth-2*characterSize)/2+characterSize*.1;
  const logoWidth=Math.min(244,sceneWidth*.82),settledCollision=Math.max(0,1-7/travelDistance);
@@ -36,11 +38,11 @@ export function HomeScreen({reduced,dailyDone,storageError,onHelp,onStart,onStag
  },[reduced,collision,recoil,tilt,title,settledCollision]);
  const heroStyle=(mint:boolean)=>({transform:[{translateX:collision.interpolate({inputRange:[0,1],outputRange:[0,mint?-travelDistance:travelDistance]})},{translateY:recoil.interpolate({inputRange:[0,1],outputRange:[0,-3]})},{rotate:tilt.interpolate({inputRange:[-1,0,1],outputRange:mint?['8deg','3deg','-9deg']:['-8deg','-3deg','9deg']})},{scale:recoil.interpolate({inputRange:[0,1],outputRange:[1,.93]})}]});
  return <ScrollView contentContainerStyle={[s.content,{minHeight:height-insets.top-insets.bottom}]} showsVerticalScrollIndicator={false}>
-  <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="게임 방법" onPress={onHelp} style={({pressed})=>[s.help,pressed&&s.pressed]}><Icon name="help" size={17} color="#9a846d"/></Pressable></View>
+  <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel={t('common.help')} onPress={actions.help} style={({pressed})=>[s.help,pressed&&s.pressed]}><Icon name="help" size={17} color="#9a846d"/></Pressable><Pressable accessibilityRole="button" accessibilityLabel={t('common.settings')} onPress={actions.settings} style={({pressed})=>[s.help,pressed&&s.pressed]}><Icon name="settings" size={17} color="#9a846d"/></Pressable></View>
   <View style={[s.body,{width:sceneWidth}]}>
    <Ambient reduced={reduced}/>
    <View style={{height:height<720?180:220,justifyContent:'center',paddingTop:height<720?8:25}}>
-    <Animated.View accessibilityLabel="트윈팝! TWIN POP" accessible style={{alignSelf:'center',opacity:title,transform:[{translateY:title.interpolate({inputRange:[0,1],outputRange:[55,0]})},{scale:title.interpolate({inputRange:[0,1],outputRange:[.8,1]})}]}}><SvgXml xml={homeLogoSvg} width={logoWidth} height={logoWidth/homeLogoAspect}/></Animated.View>
+    <Animated.View accessibilityLabel={t('home.logo')} accessible style={{alignSelf:'center',opacity:title,transform:[{translateY:title.interpolate({inputRange:[0,1],outputRange:[55,0]})},{scale:title.interpolate({inputRange:[0,1],outputRange:[.8,1]})}]}}><SvgXml xml={homeLogoSvg} width={logoWidth} height={logoWidth/homeLogoAspect}/></Animated.View>
    </View>
    <View style={[s.hero,{height:height<720?120:155}]}>
     <View pointerEvents="none" style={s.garden}><Svg width="100%" height="100%" viewBox="0 0 320 80" preserveAspectRatio="none"><Path d="M0 57C9 27 70 2 160 2C250 2 311 27 320 57C320 73 248 80 160 80C72 80 0 73 0 57Z" fill="#e7edce"/></Svg></View>
@@ -50,12 +52,12 @@ export function HomeScreen({reduced,dailyDone,storageError,onHelp,onStart,onStag
     <Animated.View style={[{position:'absolute',right:0,bottom:33},heroStyle(true)]}><Character mint size={characterSize} impact={impact} idle={!impact} reduced={reduced}/></Animated.View>
    </View>
    <View style={s.actions}>
-    <Pressable accessibilityRole="button" onPress={onStart} style={({pressed})=>[s.start,pressed&&s.pressed]}><Text style={s.startText}>시작하기</Text></Pressable>
-    <Pressable accessibilityRole="button" onPress={onStages} style={({pressed})=>[s.stages,pressed&&s.pressed]}><Text style={s.stagesText}>스테이지</Text></Pressable>
-    <Pressable accessibilityRole="button" onPress={onDaily} style={({pressed})=>[s.daily,pressed&&s.pressed]}><Icon name="calendar" size={14} color="#c99d4d"/><Text style={s.dailyText}>오늘의 퍼즐</Text><View style={{marginLeft:'auto'}}><Icon name={dailyDone?'check':'right'} size={14} color="#c99d4d"/></View></Pressable>
+    <Pressable accessibilityRole="button" onPress={actions.start} style={({pressed})=>[s.start,pressed&&s.pressed]}><Text style={s.startText}>{t('home.start')}</Text></Pressable>
+    <Pressable accessibilityRole="button" onPress={actions.stages} style={({pressed})=>[s.stages,pressed&&s.pressed]}><Text style={s.stagesText}>{t('home.stage')}</Text></Pressable>
+    <Pressable accessibilityRole="button" onPress={actions.daily} style={({pressed})=>[s.daily,pressed&&s.pressed]}><Icon name="calendar" size={14} color="#c99d4d"/><Text style={s.dailyText}>{t('home.daily')}</Text><View style={{marginLeft:'auto'}}><Icon name={dailyDone?'check':'right'} size={14} color="#c99d4d"/></View></Pressable>
    </View>
-   {storageError&&<Text accessibilityRole="alert" style={s.error}>진행 기록을 저장하지 못했어요.</Text>}
+   {storageError&&<Text accessibilityRole="alert" style={s.error}>{t('home.storageError')}</Text>}
   </View>
  </ScrollView>
 }
-const s=StyleSheet.create({content:{paddingBottom:30},header:{height:64,paddingHorizontal:23,justifyContent:'center',alignItems:'flex-end'},help:{width:40,height:42,borderRadius:14,backgroundColor:'#fffdf6',borderColor:'#e9deca',borderWidth:2,borderBottomWidth:5,alignItems:'center',justifyContent:'center'},body:{alignSelf:'center'},hero:{position:'relative',marginTop:0},garden:{position:'absolute',bottom:-1,left:4,right:4,height:65},actions:{gap:14,marginTop:46,marginBottom:16},start:{height:52,borderRadius:18,backgroundColor:'#ffa28f',borderWidth:2,borderBottomWidth:7,borderColor:'#ed887b',alignItems:'center',justifyContent:'center'},startText:{fontSize:19,color:'#875744'},stages:{height:50,borderRadius:18,backgroundColor:'#fffdf5',borderWidth:2,borderBottomWidth:5,borderColor:'#e8ddc8',alignItems:'center',justifyContent:'center'},stagesText:{fontSize:19,color:'#98816b'},daily:{height:48,borderRadius:16,backgroundColor:'#fff1c4',borderWidth:2,borderColor:'#cfa354',flexDirection:'row',alignItems:'center',gap:12,paddingHorizontal:18},dailyText:{fontSize:15,color:'#c99d4d'},pressed:{transform:[{translateY:2},{scale:.985}]},error:{fontSize:11,color:'#a35e53',textAlign:'center',marginTop:16}});
+const s=StyleSheet.create({content:{paddingBottom:30},header:{height:64,paddingHorizontal:23,flexDirection:'row',justifyContent:'flex-end',alignItems:'center',gap:10},help:{width:40,height:42,borderRadius:14,backgroundColor:'#fffdf6',borderColor:'#e9deca',borderWidth:2,borderBottomWidth:5,alignItems:'center',justifyContent:'center'},body:{alignSelf:'center'},hero:{position:'relative',marginTop:0},garden:{position:'absolute',bottom:-1,left:4,right:4,height:65},actions:{gap:14,marginTop:46,marginBottom:16},start:{height:64,borderRadius:18,backgroundColor:'#ffa28f',borderWidth:2,borderBottomWidth:7,borderColor:'#ed887b',alignItems:'center',justifyContent:'center'},startText:{fontSize:19,color:'#875744'},stages:{height:60,borderRadius:18,backgroundColor:'#fffdf5',borderWidth:2,borderBottomWidth:5,borderColor:'#e8ddc8',alignItems:'center',justifyContent:'center'},stagesText:{fontSize:19,color:'#98816b'},daily:{height:48,borderRadius:16,backgroundColor:'#fff1c4',borderWidth:2,borderColor:'#cfa354',flexDirection:'row',alignItems:'center',gap:12,paddingHorizontal:18},dailyText:{fontSize:15,color:'#c99d4d'},pressed:{transform:[{translateY:2},{scale:.985}]},error:{fontSize:11,color:'#a35e53',textAlign:'center',marginTop:16}});

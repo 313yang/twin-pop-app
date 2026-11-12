@@ -3,6 +3,7 @@ import {Animated,Easing,StyleSheet,View} from 'react-native';
 import Svg,{Defs,G,Path,RadialGradient,Circle,Stop} from 'react-native-svg';
 import {Icon} from './Icon';
 import type {StarCount} from '../game/stars';
+import {t} from '../i18n';
 
 type Props={stars:StarCount;reduced:boolean};
 
@@ -47,7 +48,7 @@ export function ClearStars({stars,reduced}:Props){
     intro.start(()=>loop.start());rays.start();
     return()=>{intro.stop();loop.stop();rays.stop()};
   },[reduced,pops,pulses,spin]);
-  return <View style={s.row} accessibilityLabel={`별 ${stars}개`}>
+  return <View style={s.row} accessibilityLabel={t('map.stars',{n:stars})}>
     {!reduced&&stars===3&&<Rays spin={spin}/>}
     {[0,1,2].map(i=><Star key={i} index={i} earned={i<stars} pop={pops[i]} pulse={pulses[i]}/>)}
   </View>;
