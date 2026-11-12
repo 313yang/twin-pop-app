@@ -24,7 +24,7 @@ function parse(raw:string):Settings{
 
 /** 앱 시작 시 저장된 설정 불러오기 */
 export function loadSettings(){
-  AsyncStorage.getItem(STORAGE).then(raw=>{if(!raw)return;try{current=parse(raw);emit()}catch{}}).catch(()=>{});
+  return AsyncStorage.getItem(STORAGE).then(raw=>{if(!raw)return;try{current=parse(raw);emit()}catch{}}).catch(()=>{});
 }
 export function getSettings(){return current}
 export function updateSettings(patch:Partial<Settings>){

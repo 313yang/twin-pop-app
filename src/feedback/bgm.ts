@@ -2,27 +2,53 @@ import {AppState} from 'react-native';
 import {createAudioPlayer,setAudioModeAsync,type AudioPlayer} from 'expo-audio';
 import {MAX_VOLUME,getSettings,subscribeSettings} from '../settings/settingsStore';
 
-/** 배경음 파일. 지금은 1초 무음 임시 파일 → 받은 배경음으로 같은 이름 교체(형식이 다르면 확장자만 수정) */
-const BGM_SOURCE=require('../../assets/sounds/bgm.wav');
-/** 볼륨 5단계일 때의 실제 볼륨 (효과음보다 작게) */
+type BgmTrack='home'|'stage';
+const SOURCES:Record<BgmTrack,number>={
+  home:require('../../assets/sounds/home.mp3'),
+  stage:require('../../assets/sounds/stage.mp3'),
+};
 const BGM_MAX=.5;
-
-let player:AudioPlayer|null=null;
-let active=true;
+const players:Partial<Record<BgmTrack,AudioPlayer>>={};
+let track:BgmTrack='home';
+let active=AppState.currentState==='active';
+let ready=false;
+let initialization:Promise<void>|null=null;
 
 function apply(){
-  if(!player)return;
+  if(!ready)return;
   const {bgmVolume}=getSettings();
+  // 이전 곡부터 멈춰 화면 전환 시 두 BGM이 겹치지 않게 한다.
+  for(const name of ['home','stage'] as const){
+    if(name!==track||!active||bgmVolume===0)players[name]?.pause();
+  }
+  if(!active||bgmVolume===0)return;
+  let player=players[track];
+  if(!player){
+    try{player=createAudioPlayer(SOURCES[track]);player.loop=true;players[track]=player}
+    catch{return}
+  }
   player.volume=BGM_MAX*bgmVolume/MAX_VOLUME;
-  if(bgmVolume>0&&active)player.play();else player.pause();
+  player.play();
 }
 
-/** 앱 시작 시 한 번: 반복 재생 + 설정 변경·백그라운드 전환에 반응 */
-export function initBgm(){
-  if(player)return;
-  try{player=createAudioPlayer(BGM_SOURCE);player.loop=true}catch{player=null;return}
-  setAudioModeAsync({playsInSilentMode:false,interruptionMode:'mixWithOthers'}).catch(()=>{});
-  subscribeSettings(apply);
-  AppState.addEventListener('change',s=>{active=s==='active';apply()});
+/** 홈·지도는 홈 곡, 캠페인·오늘의 퍼즐은 스테이지 곡. 돌아오면 이어 재생. */
+export function setBgmTrack(next:BgmTrack){
+  if(track===next)return;
+  track=next;
   apply();
+}
+
+/** 외부 음악 혼합 설정이 끝난 뒤에만 재생을 시작한다. */
+export function initBgm():Promise<void>{
+  if(initialization)return initialization;
+  initialization=setAudioModeAsync({playsInSilentMode:false,interruptionMode:'mixWithOthers'})
+    .then(()=>{
+      active=AppState.currentState==='active';
+      ready=true;
+      subscribeSettings(apply);
+      AppState.addEventListener('change',s=>{active=s==='active';apply()});
+      apply();
+    })
+    .catch(()=>{initialization=null});
+  return initialization;
 }

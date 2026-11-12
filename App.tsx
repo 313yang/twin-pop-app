@@ -15,7 +15,7 @@ import {HelpContent} from './src/components/HelpContent';
 import {SettingsContent} from './src/components/SettingsContent';
 import {t} from './src/i18n';
 import {useCloudProgress} from './src/sync/useCloudProgress';
-import {initBgm} from './src/feedback/bgm';
+import {initBgm,setBgmTrack} from './src/feedback/bgm';
 import {useMoveFeedback} from './src/feedback/useMoveFeedback';
 import {loadSettings} from './src/settings/settingsStore';
 import {StageMap} from './src/components/stage-map/StageMap';
@@ -55,7 +55,8 @@ function GameApp(){
  useEffect(()=>{setHint([])},[state.revision]);
  useEffect(()=>{if(!state.won||state.screen!=='game')return;const timer=setTimeout(()=>setDialog('result'),reduced?0:RESULT_DELAY_MS);return()=>clearTimeout(timer)},[state.won,state.screen,reduced]);
  useEffect(()=>{if(dialog!=='result'||adFree)return;const timer=setTimeout(()=>showStageClearAd(()=>{}),CLEAR_AD_DELAY_MS);return()=>clearTimeout(timer)},[dialog,adFree]);
- useEffect(()=>{initAds();loadSettings();initBgm()},[]);
+ useEffect(()=>{initAds();void loadSettings().then(initBgm)},[]);
+ useEffect(()=>{setBgmTrack(state.screen==='game'?'stage':'home')},[state.screen]);
  useMoveFeedback(state,level);
  useCloudProgress(state,dispatch);
  useEffect(()=>{if(state.screen==='levels')setChapter(Math.floor((continueStage-1)/STAGES_PER_CHAPTER))},[state.screen]);
