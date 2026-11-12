@@ -32,8 +32,7 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "export": "expo export --platform ios --platform android",
-    "assets": "node scripts/render-icons.cjs"
+    "export": "expo export --platform ios --platform android"
   },
   "private": true
 }

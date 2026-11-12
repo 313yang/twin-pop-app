@@ -6,12 +6,11 @@ import {SvgXml} from 'react-native-svg';
 import {AppText as Text} from './AppText';
 import {Character} from './Character';
 import {Icon} from './Icon';
-import {homeLogoSvg,homeLogoAspect} from '../art/homeLogo';
 import {homeLogoGlobalSvg,homeLogoGlobalAspect} from '../art/homeLogoGlobal';
-import {lang,t} from '../i18n';
+import {t} from '../i18n';
 
-/** 한국어는 '트윈팝! TWINPOP' 로고, 그 외 언어는 'TWIN / POP!' 두 줄 로고 */
-const LOGO=lang==='ko'?{svg:homeLogoSvg,aspect:homeLogoAspect}:{svg:homeLogoGlobalSvg,aspect:homeLogoGlobalAspect};
+/** 홈 로고: 모든 언어에서 영문 'TWIN / POP!' 두 줄 로고 */
+const LOGO={svg:homeLogoGlobalSvg,aspect:homeLogoGlobalAspect};
 
 function Sparkle({size=23}:{size?:number}){return <Svg width={size} height={size} viewBox="0 0 40 40"><Path d="M20 1Q24 15 39 20Q24 25 20 39Q16 25 1 20Q16 15 20 1Z" fill="#f4c878"/></Svg>}
 function Flower({size=24,color='#f1d381'}:{size?:number;color?:string}){return <Svg width={size} height={size} viewBox="0 0 40 40">{[0,72,144,216,288].map(angle=><Ellipse key={angle} cx={20} cy={10} rx={4.5} ry={10} fill={color} transform={`rotate(${angle} 20 20)`}/>)}<Circle cx={20} cy={20} r={3} fill="#fff4d5"/></Svg>}
