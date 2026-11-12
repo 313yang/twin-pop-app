@@ -8,7 +8,7 @@ export function characterSvg(mint=false,happy=false,blink=false,impact=false):st
   ? `<path d="M36 44Q39 40 42 44M58 44Q61 40 64 44" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`
   : blink
   ? `<path d="M36 44Q39 46 42 44M58 44Q61 46 64 44" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>`
-  : `<ellipse cx="39" cy="43" rx="2.8" ry="3.7" fill="${ink}"/><ellipse cx="61" cy="43" rx="2.8" ry="3.7" fill="${ink}"/><circle cx="38.3" cy="41.8" r=".65" fill="#fff8e9" opacity=".75"/><circle cx="60.3" cy="41.8" r=".65" fill="#fff8e9" opacity=".75"/>`;
+  : `<ellipse cx="39" cy="43" rx="2.8" ry="3.7" fill="${ink}"/><ellipse cx="61" cy="43" rx="2.8" ry="3.7" fill="${ink}"/>`;
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -14 100 116">
  <defs><linearGradient id="${gradient}" x1="0" y1="0" x2=".65" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs>
  <ellipse cx="50" cy="94" rx="29" ry="3.3" fill="${edge}" opacity=".13"/>
