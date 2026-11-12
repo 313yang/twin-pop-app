@@ -3,12 +3,12 @@ export function characterSvg(mint=false,happy=false,blink=false,impact=false):st
  const color=mint?'#9dd4b3':'#ffa392',light=mint?'#b2dfc1':'#ffb4a1',edge=mint?'#79ad8b':'#d38a77';
  const gradient=mint?'mintBody':'peachBody',ink='#70554b';
  const eyes=impact
-  ? `<path d="M34 40L42 44L34 47M66 40L58 44L66 47" fill="none" stroke="${ink}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>`
+  ? `<path d="M31 38L43 44L31 50M69 38L57 44L69 50" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`
   : happy
-  ? `<path d="M36 44Q39 40 42 44M58 44Q61 40 64 44" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`
+  ? `<path d="M31 46Q37 37 43 46M57 46Q63 37 69 46" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/>`
   : blink
-  ? `<path d="M36 44Q39 46 42 44M58 44Q61 46 64 44" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>`
-  : `<ellipse cx="39" cy="43" rx="2.8" ry="3.7" fill="${ink}"/><ellipse cx="61" cy="43" rx="2.8" ry="3.7" fill="${ink}"/>`;
+  ? `<path d="M31 44Q37 48 43 44M57 44Q63 48 69 44" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/>`
+  : `<ellipse cx="37" cy="44" rx="5" ry="6.4" fill="${ink}"/><ellipse cx="63" cy="44" rx="5" ry="6.4" fill="${ink}"/>`;
  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -14 100 116">
  <defs><linearGradient id="${gradient}" x1="0" y1="0" x2=".65" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs>
  <ellipse cx="50" cy="94" rx="29" ry="3.3" fill="${edge}" opacity=".13"/>
@@ -19,7 +19,7 @@ export function characterSvg(mint=false,happy=false,blink=false,impact=false):st
  <path d="M38 17Q27 14 20 23" fill="none" stroke="#fff3df" stroke-opacity=".6" stroke-width="3.4" stroke-linecap="round"/>
  <path d="M16 29L15 33" fill="none" stroke="#fff3df" stroke-opacity=".5" stroke-width="2.8" stroke-linecap="round"/>
  <path d="M67 84Q77 80 81 72" fill="none" stroke="${edge}" stroke-opacity=".22" stroke-width="2.2" stroke-linecap="round"/>
- <ellipse cx="31" cy="50" rx="6" ry="3.2" fill="#e68e87" opacity=".5"/><ellipse cx="69" cy="50" rx="6" ry="3.2" fill="#e68e87" opacity=".5"/>
- ${eyes}<path d="M46 49Q50 55 54 49" fill="none" stroke="${ink}" stroke-width="2.3" stroke-linecap="round"/>
+ <ellipse cx="27" cy="54" rx="7.5" ry="4" fill="#e68e87" opacity=".5"/><ellipse cx="73" cy="54" rx="7.5" ry="4" fill="#e68e87" opacity=".5"/>
+ ${eyes}<path d="M44 52Q50 60 56 52" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>
  </svg>`;
 }
