@@ -1,6 +1,25 @@
-/** Same proportions/palette as the web character. No platform fonts or shadows. */
+/** Shared apple artwork for the home and board; expressions retain a compact face. */
 export function characterSvg(mint=false,happy=false,blink=false,impact=false):string{
- const color=mint?'#94d6b6':'#ff998c',light=mint?'#b5e4ca':'#ffb4a4',edge=mint?'#6fa98d':'#cf8376';
- const gradient=mint?'mintBody':'peachBody';
- return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -14 100 116"><defs><linearGradient id="${gradient}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs><ellipse cx="50" cy="94" rx="32" ry="5" fill="${edge}" opacity=".16"/>${mint?'<ellipse cx="48" cy="0" rx="15" ry="6" transform="rotate(-15 48 0)" fill="#eec477"/>':'<path d="M45 4Q40-10 61-12Q65 2 45 4Z" fill="#8caa69"/>'}<path d="M50 3C17 2 4 14 4 46V60C4 86 18 95 47 95H55C83 95 96 82 96 57V45C96 15 82 3 50 3Z" fill="url(#${gradient})" stroke="${edge}" stroke-width="4.5"/><path d="M22 17Q49 5 76 17" fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="5" stroke-linecap="round"/><ellipse cx="24" cy="57" rx="7" ry="4" fill="#e98d87" opacity=".48"/><ellipse cx="76" cy="57" rx="7" ry="4" fill="#e98d87" opacity=".48"/>${impact?'<path d="M29 38L41 44L29 50M71 38L59 44L71 50" fill="none" stroke="#68524a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>':happy||blink?'<path d="M33 45Q36 42 39 45M61 45Q64 42 67 45" fill="none" stroke="#68524a" stroke-width="3" stroke-linecap="round"/>':'<ellipse cx="36" cy="43" rx="3.2" ry="4.6" fill="#68524a"/><ellipse cx="64" cy="43" rx="3.2" ry="4.6" fill="#68524a"/>'}<path d="M45 55Q50 63 55 55" fill="none" stroke="#785a4e" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+ const color=mint?'#9dd4b3':'#ffa392',light=mint?'#b2dfc1':'#ffb4a1',edge=mint?'#79ad8b':'#d38a77';
+ const gradient=mint?'mintBody':'peachBody',ink='#70554b';
+ const eyes=impact
+  ? `<path d="M34 40L42 44L34 47M66 40L58 44L66 47" fill="none" stroke="${ink}" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>`
+  : happy
+  ? `<path d="M36 44Q39 40 42 44M58 44Q61 40 64 44" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`
+  : blink
+  ? `<path d="M36 44Q39 46 42 44M58 44Q61 46 64 44" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>`
+  : `<ellipse cx="39" cy="43" rx="2.8" ry="3.7" fill="${ink}"/><ellipse cx="61" cy="43" rx="2.8" ry="3.7" fill="${ink}"/><circle cx="38.3" cy="41.8" r=".65" fill="#fff8e9" opacity=".75"/><circle cx="60.3" cy="41.8" r=".65" fill="#fff8e9" opacity=".75"/>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -14 100 116">
+ <defs><linearGradient id="${gradient}" x1="0" y1="0" x2=".65" y2="1"><stop stop-color="${light}"/><stop offset="1" stop-color="${color}"/></linearGradient></defs>
+ <ellipse cx="50" cy="94" rx="29" ry="3.3" fill="${edge}" opacity=".13"/>
+ <path d="M49 14Q47 3 51-4" fill="none" stroke="#9b8060" stroke-width="4" stroke-linecap="round"/>
+ <path d="M51 4C50-6 59-12 69-10C69 0 61 7 51 4Z" fill="${mint?'#b4bd79':'#91b174'}"/>
+ <path d="M54 2Q60-3 65-5" fill="none" stroke="${mint?'#99a468':'#78965f'}" stroke-width="1.3" stroke-linecap="round" opacity=".65"/>
+ <path d="M49 13C36 5 22 6 13 17C2 29 4 47 8 61C12 78 23 92 35 93C41 94 46 90 50 90C55 90 60 94 67 92C82 88 91 70 94 53C97 37 95 22 84 14C73 5 60 7 49 13Z" fill="url(#${gradient})" stroke="${edge}" stroke-width="3.5" stroke-linejoin="round"/>
+ <path d="M38 17Q27 14 20 23" fill="none" stroke="#fff3df" stroke-opacity=".6" stroke-width="3.4" stroke-linecap="round"/>
+ <path d="M16 29L15 33" fill="none" stroke="#fff3df" stroke-opacity=".5" stroke-width="2.8" stroke-linecap="round"/>
+ <path d="M67 84Q77 80 81 72" fill="none" stroke="${edge}" stroke-opacity=".22" stroke-width="2.2" stroke-linecap="round"/>
+ <ellipse cx="31" cy="50" rx="6" ry="3.2" fill="#e68e87" opacity=".5"/><ellipse cx="69" cy="50" rx="6" ry="3.2" fill="#e68e87" opacity=".5"/>
+ ${eyes}<path d="M46 49Q50 55 54 49" fill="none" stroke="${ink}" stroke-width="2.3" stroke-linecap="round"/>
+ </svg>`;
 }
