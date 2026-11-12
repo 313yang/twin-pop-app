@@ -1,1 +1,38 @@
-{"expo":{"name":"TWINPOP","slug":"twinpop","version":"0.1.0","orientation":"portrait","userInterfaceStyle":"light","icon":"./assets/icon.png","splash":{"image":"./assets/splash-icon.png","resizeMode":"contain","backgroundColor":"#fff8eb"},"ios":{"supportsTablet":false,"bundleIdentifier":"com.twinpop.game"},"android":{"package":"com.twinpop.game","adaptiveIcon":{"foregroundImage":"./assets/adaptive-icon.png","backgroundColor":"#fff8eb"}},"web":{"favicon":"./assets/favicon.png"}}}
+{
+  "expo": {
+    "name": "TWINPOP",
+    "slug": "twinpop",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#fff8eb"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.twinpop.game"
+    },
+    "android": {
+      "package": "com.twinpop.game",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#fff8eb"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "iosAppId": "ca-app-pub-8097019015758092~4634388658",
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713"
+        }
+      ]
+    ]
+  }
+}
