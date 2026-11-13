@@ -2,7 +2,7 @@
   "expo": {
     "name": "TWINPOP",
     "slug": "twinpop",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
@@ -19,7 +19,8 @@
       },
       "entitlements": {
         "com.apple.developer.ubiquity-kvstore-identifier": "$(TeamIdentifierPrefix)$(CFBundleIdentifier)"
-      }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.twinpop.game"
