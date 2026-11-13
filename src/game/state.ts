@@ -3,7 +3,7 @@ import type { Direction, Mode, Pair, Progress, Session } from './types';
 export const emptyProgress=():Progress=>({version:1,nextStage:1,wins:{},swipeLearned:false,resume:null});
 export type State={ready:boolean;screen:'home'|'levels'|'game';progress:Progress;session:Session|null;won:boolean;revision:number;direction:Direction|null};
 export const initialState:State={ready:false,screen:'home',progress:emptyProgress(),session:null,won:false,revision:0,direction:null};
-export type Action={type:'hydrate';progress:Progress}|{type:'start';mode:Mode;index:number;date:string}|{type:'move';direction:Direction}|{type:'undo'}|{type:'reset'}|{type:'home'|'levels'|'learned'};
+export type Action={type:'hydrate';progress:Progress}|{type:'start';mode:Mode;index:number;date:string;fresh?:boolean}|{type:'move';direction:Direction}|{type:'undo'}|{type:'reset'}|{type:'home'|'levels'|'learned'};
 function updateSession(state:State,session:Session):State{return {...state,session,progress:{...state.progress,resume:session},revision:state.revision+1};}
 export function reducer(state:State,action:Action):State {
   if(action.type==='hydrate')return {...state,ready:true,progress:action.progress};
@@ -11,7 +11,7 @@ export function reducer(state:State,action:Action):State {
   if(action.type==='learned')return {...state,progress:{...state.progress,swipeLearned:true}};
   if(action.type==='start'){
     const level=getLevel(action.mode,action.index,action.date),prior=state.progress.resume;
-    const session:Session=prior&&prior.mode===action.mode&&prior.index===action.index&&(action.mode!=='daily'||prior.date===action.date)?prior:{mode:action.mode,index:action.index,date:action.date,position:[...level.start],history:[]};
+    const session:Session=!action.fresh&&prior&&prior.mode===action.mode&&prior.index===action.index&&(action.mode!=='daily'||prior.date===action.date)?prior:{mode:action.mode,index:action.index,date:action.date,position:[...level.start],history:[]};
     return updateSession({...state,screen:'game',won:false,direction:null},session);
   }
   if(!state.session||state.screen!=='game')return state;

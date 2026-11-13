@@ -16,6 +16,7 @@ import {SettingsContent} from './src/components/SettingsContent';
 import {t} from './src/i18n';
 import {useCloudProgress} from './src/sync/useCloudProgress';
 import {initBgm,setBgmTrack} from './src/feedback/bgm';
+import {feedback} from './src/feedback/feedback';
 import {useMoveFeedback} from './src/feedback/useMoveFeedback';
 import {loadSettings} from './src/settings/settingsStore';
 import {StageMap} from './src/components/stage-map/StageMap';
@@ -54,6 +55,7 @@ function GameApp(){
  useEffect(()=>{if(!state.ready||(!fontsLoaded&&!fontError))return;const payload=JSON.stringify(state.progress);writeQueue.current=writeQueue.current.then(()=>AsyncStorage.setItem(STORAGE,payload)).then(()=>{if(mounted.current)setStorageError(false)}).catch(()=>{if(mounted.current)setStorageError(true)});},[state.ready,state.progress]);
  useEffect(()=>{setHint([])},[state.revision]);
  useEffect(()=>{if(!state.won||state.screen!=='game')return;const timer=setTimeout(()=>setDialog('result'),reduced?0:RESULT_DELAY_MS);return()=>clearTimeout(timer)},[state.won,state.screen,reduced]);
+ useEffect(()=>{if(dialog==='result')feedback('fanfare')},[dialog]);
  useEffect(()=>{if(dialog!=='result'||adFree)return;const timer=setTimeout(()=>showStageClearAd(()=>{}),CLEAR_AD_DELAY_MS);return()=>clearTimeout(timer)},[dialog,adFree]);
  useEffect(()=>{initAds();void loadSettings().then(initBgm)},[]);
  useEffect(()=>{setBgmTrack(state.screen==='game'?'stage':'home')},[state.screen]);
@@ -63,13 +65,13 @@ function GameApp(){
  useEffect(()=>{const sub=BackHandler.addEventListener('hardwareBackPress',()=>{if(dialog==='result'){setDialog(null);dispatch({type:'home'});return true}if(dialog){setDialog(null);return true}if(state.screen==='game'){if(!state.won)setDialog('pause');else dispatch({type:'home'});return true}if(state.screen==='levels'){dispatch({type:'home'});return true}return false});return()=>sub.remove()},[dialog,state.screen,state.won]);
  const input=useRef<(d:Direction)=>void>(()=>{});input.current=d=>{if(state.screen!=='game'||state.won||dialog)return;dispatch({type:'learned'});dispatch({type:'move',direction:d})};
  const pan=useMemo(()=>PanResponder.create({onStartShouldSetPanResponder:()=>false,onMoveShouldSetPanResponderCapture:(_,g)=>Math.max(Math.abs(g.dx),Math.abs(g.dy))>10,onMoveShouldSetPanResponder:(_,g)=>Math.max(Math.abs(g.dx),Math.abs(g.dy))>10,onPanResponderRelease:(_,g)=>{if(Math.max(Math.abs(g.dx),Math.abs(g.dy))<18)return;input.current(Math.abs(g.dx)>Math.abs(g.dy)?g.dx>0?1:3:g.dy>0?2:0)},onPanResponderTerminationRequest:()=>true}),[]);
- const start=(mode:Mode,index:number)=>{setDialog(null);setHint([]);dispatch({type:'start',mode,index,date:koreaDate()})};
+ const start=(mode:Mode,index:number,fresh=false)=>{setDialog(null);setHint([]);dispatch({type:'start',mode,index,date:koreaDate(),fresh})};
  const home=()=>{setDialog(null);dispatch({type:'home'})};
  const continueStage=state.progress.resume?.mode==='campaign'?state.progress.resume.index:state.progress.nextStage;
  const boardHeight=Math.max(level?level.n*20+4*(level.n-1):96,Math.min(185,(height-insets.top-insets.bottom-360-(level?.reverse?28:0))/2));
  if(!state.ready||(!fontsLoaded&&!fontError))return <View style={[s.shell,{justifyContent:'center',alignItems:'center'}]}><ActivityIndicator color="#dc8d7d"/></View>;
  return <SafeAreaView style={s.safe}><StatusBar style="dark"/><View style={[s.shell,{width:contentWidth}]}>
- {state.screen==='home'&&<HomeScreen reduced={reduced} dailyDone={!!state.progress.wins['daily-'+today]} storageError={storageError} actions={{help:()=>setDialog('help'),settings:()=>setDialog('settings'),start:()=>start('campaign',continueStage),stages:()=>{setChapter(Math.floor((continueStage-1)/STAGES_PER_CHAPTER));dispatch({type:'levels'})},daily:()=>start('daily',1)}}/>}
+ {state.screen==='home'&&<HomeScreen reduced={reduced} dailyDone={!!state.progress.wins['daily-'+today]} storageError={storageError} actions={{help:()=>setDialog('help'),settings:()=>setDialog('settings'),start:()=>start('campaign',continueStage,true),stages:()=>{setChapter(Math.floor((continueStage-1)/STAGES_PER_CHAPTER));dispatch({type:'levels'})},daily:()=>start('daily',1)}}/>}
  {state.screen==='levels'&&<><View style={s.header}><Round icon="back" label={t('common.home')} onPress={home}/><Text style={s.stageTitle}>STAGE</Text><View style={{width:44}}/></View><View style={s.levelsBody}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chapters}>{Array.from({length:CHAPTER_COUNT},(_,i)=><Pressable accessibilityRole="button" accessibilityState={{selected:i===chapter}} key={i} onPress={()=>setChapter(i)} style={[s.chapter,i===chapter&&{backgroundColor:'#ffd4bd'}]}><Text style={s.chapterText}>{t('map.chapter',{n:i+1})}</Text></Pressable>)}</ScrollView></View><StageMap key={chapter} width={contentWidth} current={continueStage} onSelect={n=>start('campaign',n)} stages={Array.from({length:Math.min(STAGES_PER_CHAPTER,TOTAL_STAGES-chapter*STAGES_PER_CHAPTER)},(_,i)=>{const n=chapter*STAGES_PER_CHAPTER+i+1,best=state.progress.wins['campaign-'+n];return {stage:n,stars:best===undefined?null:starsFor(best,getLevel('campaign',n,today).par),locked:best===undefined&&n>state.progress.nextStage&&n!==continueStage}})}/></>}
  {state.screen==='game'&&session&&level&&<><View style={s.header}><Round icon="back" label={t('common.home')} onPress={home}/><Text style={s.stageTitle}>{session.mode==='daily'?t('game.daily'):t('game.stage',{n:String(session.index).padStart(2,'0')})}</Text><Round icon="pause" label={t('game.pause')} onPress={()=>{if(!state.won)setDialog('pause')}}/></View>
   <ScrollView bounces={false} contentContainerStyle={s.gameBody}><View style={s.stats}><Text style={s.statText}>{t('game.moves')} <Text style={s.statValue}>{session.history.length}</Text></Text><Text style={s.statText}>{t('game.par')} <Text style={s.statValue}>{level.par}</Text></Text></View>

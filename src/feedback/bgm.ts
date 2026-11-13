@@ -1,6 +1,7 @@
 import {AppState} from 'react-native';
 import {createAudioPlayer,setAudioModeAsync,type AudioPlayer} from 'expo-audio';
 import {MAX_VOLUME,getSettings,subscribeSettings} from '../settings/settingsStore';
+import {AudioSession} from '../../modules/audio-session';
 
 type BgmTrack='home'|'stage';
 const SOURCES:Record<BgmTrack,number>={
@@ -8,10 +9,21 @@ const SOURCES:Record<BgmTrack,number>={
   stage:require('../../assets/sounds/stage.mp3'),
 };
 const BGM_MAX=.5;
+/** 곡마다 원본 음량 차이 보정 (홈 곡이 커서 낮춤) */
+const TRACK_GAIN:Record<BgmTrack,number>={home:.6,stage:1};
 const players:Partial<Record<BgmTrack,AudioPlayer>>={};
 let track:BgmTrack='home';
 let active=AppState.currentState==='active';
 let ready=false;
+/** 다른 앱 음악이 재생 중이면 배경음을 이 비율로 낮춤 */
+const OTHER_AUDIO_GAIN=.2;
+/** 다른 음악 재생 여부 확인 주기 (재생/정지 알림을 못 받는 경우 대비) */
+const OTHER_AUDIO_POLL_MS=3000;
+let otherAudio=false;
+function checkOtherAudio(){
+  let next=false;try{next=!!AudioSession?.isOtherAudioPlaying()}catch{}
+  if(next!==otherAudio){otherAudio=next;apply()}
+}
 let initialization:Promise<void>|null=null;
 
 function apply(){
@@ -27,7 +39,7 @@ function apply(){
     try{player=createAudioPlayer(SOURCES[track]);player.loop=true;players[track]=player}
     catch{return}
   }
-  player.volume=BGM_MAX*bgmVolume/MAX_VOLUME;
+  player.volume=BGM_MAX*TRACK_GAIN[track]*(otherAudio?OTHER_AUDIO_GAIN:1)*bgmVolume/MAX_VOLUME;
   player.play();
 }
 
@@ -46,7 +58,10 @@ export function initBgm():Promise<void>{
       active=AppState.currentState==='active';
       ready=true;
       subscribeSettings(apply);
-      AppState.addEventListener('change',s=>{active=s==='active';apply()});
+      AppState.addEventListener('change',s=>{active=s==='active';if(active)checkOtherAudio();apply()});
+      AudioSession?.addListener('onOtherAudioChange',checkOtherAudio);
+      setInterval(()=>{if(active)checkOtherAudio()},OTHER_AUDIO_POLL_MS);
+      checkOtherAudio();
       apply();
     })
     .catch(()=>{initialization=null});
