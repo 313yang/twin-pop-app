@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.twinpop.game",
+      "bundleIdentifier": "com.agizagistudio.twinpop",
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true
       },
